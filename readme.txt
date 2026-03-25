@@ -1,5 +1,5 @@
 === Klaw SEO ===
-Contributors: klawagency
+Contributors: welcomein, klawagent
 Tags: seo, meta tags, sitemap, schema, redirects
 Requires at least: 6.0
 Tested up to: 6.7
