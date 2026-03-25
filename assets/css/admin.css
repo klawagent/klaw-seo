@@ -1,0 +1,326 @@
+/**
+ * Klaw SEO — Admin Styles
+ *
+ * Styles for meta box, settings pages, admin columns, and all UI components.
+ */
+
+/* ==========================================================================
+   Meta Box — Tabs
+   ========================================================================== */
+
+.klaw-seo-meta-box {
+    margin: -6px -12px -12px;
+}
+
+.klaw-seo-tabs {
+    display: flex;
+    border-bottom: 1px solid #c3c4c7;
+    background: #f0f0f1;
+    padding: 0;
+    margin: 0;
+}
+
+.klaw-seo-tab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #50575e;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.klaw-seo-tab:hover {
+    color: #2271b1;
+}
+
+.klaw-seo-tab.active {
+    color: #1d2327;
+    border-bottom-color: #2271b1;
+    background: #fff;
+}
+
+.klaw-seo-tab-content {
+    display: none;
+    padding: 16px 12px;
+}
+
+.klaw-seo-tab-content.active {
+    display: block;
+}
+
+/* ==========================================================================
+   Meta Box — Fields
+   ========================================================================== */
+
+.klaw-seo-field {
+    margin-bottom: 16px;
+}
+
+.klaw-seo-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 13px;
+    color: #1d2327;
+}
+
+.klaw-seo-field input[type="text"],
+.klaw-seo-field input[type="url"],
+.klaw-seo-field textarea {
+    width: 100%;
+    max-width: 100%;
+}
+
+.klaw-seo-checkbox-field label {
+    font-weight: 400;
+}
+
+/* ==========================================================================
+   Meta Box — Character Counter
+   ========================================================================== */
+
+.klaw-seo-counter {
+    text-align: right;
+    font-size: 12px;
+    color: #757575;
+    margin-top: 4px;
+}
+
+.klaw-seo-counter.over-limit {
+    color: #d63638;
+    font-weight: 600;
+}
+
+.klaw-seo-counter .klaw-seo-counter-num {
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   Meta Box — Google Search Preview
+   ========================================================================== */
+
+.klaw-seo-preview {
+    background: #fff;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    max-width: 600px;
+    font-family: Arial, sans-serif;
+}
+
+.klaw-seo-preview-title {
+    color: #1a0dab;
+    font-size: 18px;
+    line-height: 1.3;
+    margin-bottom: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.klaw-seo-preview-title:hover {
+    text-decoration: underline;
+}
+
+.klaw-seo-preview-url {
+    color: #006621;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.klaw-seo-preview-desc {
+    color: #545454;
+    font-size: 13px;
+    line-height: 1.54;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   Meta Box — OG Image Picker
+   ========================================================================== */
+
+.klaw-seo-image-picker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.klaw-seo-og-preview-img {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.klaw-seo-image-picker .button {
+    margin-right: 4px;
+}
+
+/* ==========================================================================
+   Meta Box — FAQ Repeater
+   ========================================================================== */
+
+.klaw-seo-faq-section h4 {
+    margin: 16px 0 4px;
+    font-size: 14px;
+}
+
+.klaw-seo-faq-item {
+    background: #f6f7f7;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.klaw-seo-faq-item input[type="text"],
+.klaw-seo-faq-item textarea {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.klaw-seo-faq-item .klaw-seo-faq-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    color: #d63638;
+    border-color: #d63638;
+}
+
+.klaw-seo-faq-item .klaw-seo-faq-remove:hover {
+    background: #d63638;
+    color: #fff;
+}
+
+#klaw-seo-faq-add {
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   Settings Page
+   ========================================================================== */
+
+.klaw-seo-settings {
+    max-width: 900px;
+}
+
+.klaw-seo-settings .nav-tab-wrapper {
+    margin-bottom: 20px;
+}
+
+.klaw-seo-settings-form .form-table th {
+    width: 200px;
+    padding-top: 15px;
+}
+
+.klaw-seo-settings-form .description {
+    font-style: italic;
+    color: #757575;
+}
+
+/* Redirect form */
+.klaw-seo-redirect-form {
+    border-radius: 4px;
+}
+
+.klaw-seo-redirect-form h3 {
+    margin-top: 0;
+}
+
+/* Broken links status badges */
+.klaw-seo-status-0 {
+    color: #d63638;
+    font-weight: 600;
+}
+
+.klaw-seo-status-404 {
+    color: #d63638;
+    font-weight: 600;
+}
+
+.klaw-seo-status-403 {
+    color: #dba617;
+    font-weight: 600;
+}
+
+.klaw-seo-status-500 {
+    color: #d63638;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   Admin Columns
+   ========================================================================== */
+
+.column-klaw_seo_title {
+    width: 180px;
+}
+
+.column-klaw_seo_noindex {
+    width: 80px;
+}
+
+.klaw-seo-col-ok {
+    color: #1d2327;
+}
+
+.klaw-seo-col-over {
+    color: #d63638;
+}
+
+.klaw-seo-col-default {
+    color: #a7aaad;
+}
+
+.klaw-seo-noindex-badge {
+    display: inline-block;
+    background: #d63638;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.klaw-seo-index-badge {
+    display: inline-block;
+    background: #00a32a;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+.klaw-seo-delete {
+    color: #d63638 !important;
+}
+
+.klaw-seo-delete:hover {
+    color: #a00 !important;
+}
