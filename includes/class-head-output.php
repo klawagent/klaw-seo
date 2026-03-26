@@ -13,7 +13,8 @@ class Klaw_SEO_Head_Output {
 
     public function __construct() {
         add_action( 'wp_head', [ $this, 'output' ], 1 );
-        add_filter( 'document_title_parts', [ $this, 'filter_title' ] );
+        add_filter( 'document_title_parts', [ $this, 'filter_title' ], 99 );
+        add_filter( 'get_the_archive_title', [ $this, 'clean_archive_title' ], 99 );
         // Remove WordPress default canonical to avoid duplicates.
         remove_action( 'wp_head', 'rel_canonical' );
     }
@@ -49,6 +50,13 @@ class Klaw_SEO_Head_Output {
         }
 
         return $parts;
+    }
+
+    /**
+     * Strip "Archives:", "Category:", etc. prefixes from archive titles.
+     */
+    public function clean_archive_title( $title ) {
+        return preg_replace( '/^.+?:\s*/u', '', wp_strip_all_tags( $title ) );
     }
 
     /**
@@ -253,8 +261,10 @@ class Klaw_SEO_Head_Output {
     private function apply_template( $title, $settings, $sep ) {
         $template = '';
 
-        if ( is_front_page() ) {
+        if ( is_front_page() && ! is_home() ) {
             $template = $settings['title_template_home'] ?? '';
+        } elseif ( is_home() ) {
+            $template = $settings['title_template_page'] ?? '{post_title} {sep} {site_title}';
         } elseif ( is_singular( 'post' ) ) {
             $template = $settings['title_template_post'] ?? '';
         } elseif ( is_singular( 'page' ) ) {
@@ -269,7 +279,7 @@ class Klaw_SEO_Head_Output {
 
         $site_name     = get_bloginfo( 'name' );
         $tagline       = get_bloginfo( 'description' );
-        $archive_title = is_archive() ? wp_strip_all_tags( get_the_archive_title() ) : '';
+        $archive_title = is_archive() ? preg_replace( '/^.+?:\s*/u', '', wp_strip_all_tags( get_the_archive_title() ) ) : '';
 
         $replacements = [
             '{post_title}'    => $title,
