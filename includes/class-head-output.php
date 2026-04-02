@@ -261,7 +261,7 @@ class Klaw_SEO_Head_Output {
     private function apply_template( $title, $settings, $sep ) {
         $template = '';
 
-        if ( is_front_page() && ! is_home() ) {
+        if ( is_front_page() ) {
             $template = $settings['title_template_home'] ?? '';
         } elseif ( is_home() ) {
             $template = $settings['title_template_page'] ?? '{post_title} {sep} {site_title}';

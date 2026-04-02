@@ -14,6 +14,8 @@ $fb       = $options['social_facebook'] ?? '';
 $ig       = $options['social_instagram'] ?? '';
 $tw       = $options['social_twitter'] ?? '';
 $li       = $options['social_linkedin'] ?? '';
+$pt       = $options['social_pinterest'] ?? '';
+$yt       = $options['social_youtube'] ?? '';
 $og_img   = $options['default_og_image'] ?? '';
 ?>
 
@@ -57,6 +59,26 @@ $og_img   = $options['default_og_image'] ?? '';
         <td>
             <input type="url" id="klaw-social-linkedin" name="<?php echo esc_attr( $opt_name ); ?>[social_linkedin]"
                    value="<?php echo esc_url( $li ); ?>" class="regular-text" placeholder="https://linkedin.com/company/yourcompany" />
+        </td>
+    </tr>
+
+    <tr>
+        <th scope="row">
+            <label for="klaw-social-pinterest"><?php esc_html_e( 'Pinterest URL', 'klaw-seo' ); ?></label>
+        </th>
+        <td>
+            <input type="url" id="klaw-social-pinterest" name="<?php echo esc_attr( $opt_name ); ?>[social_pinterest]"
+                   value="<?php echo esc_url( $pt ); ?>" class="regular-text" placeholder="https://pinterest.com/yourprofile" />
+        </td>
+    </tr>
+
+    <tr>
+        <th scope="row">
+            <label for="klaw-social-youtube"><?php esc_html_e( 'YouTube URL', 'klaw-seo' ); ?></label>
+        </th>
+        <td>
+            <input type="url" id="klaw-social-youtube" name="<?php echo esc_attr( $opt_name ); ?>[social_youtube]"
+                   value="<?php echo esc_url( $yt ); ?>" class="regular-text" placeholder="https://youtube.com/@yourchannel" />
         </td>
     </tr>
 </table>

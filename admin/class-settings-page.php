@@ -47,6 +47,7 @@ class Klaw_SEO_Settings {
             'robots'         => __( 'Robots.txt', 'klaw-seo' ),
             'alt-text'       => __( 'Alt Text', 'klaw-seo' ),
             'broken-links'   => __( 'Broken Links', 'klaw-seo' ),
+            'tracking'       => __( 'Tracking', 'klaw-seo' ),
         ];
 
         add_action( 'admin_menu', [ $this, 'register_menus' ] );
@@ -139,6 +140,13 @@ class Klaw_SEO_Settings {
             'broken_links_frequency',
             'broken_links_email',
             'robots_content',
+            'tracking_ga4_id',
+            'tracking_search_console',
+            'tracking_clarity_id',
+            'tracking_meta_pixel_id',
+            'tracking_gtm_id',
+            'tracking_tiktok_pixel_id',
+            'tracking_pinterest_tag_id',
         ];
 
         foreach ( $text_fields as $key ) {
@@ -161,6 +169,8 @@ class Klaw_SEO_Settings {
             'social_instagram',
             'social_twitter',
             'social_linkedin',
+            'social_pinterest',
+            'social_youtube',
             'default_og_image',
             'business_gbp_url',
         ];
@@ -199,6 +209,20 @@ class Klaw_SEO_Settings {
             $existing['alt_text_ai_enabled']      = ! empty( $input['alt_text_ai_enabled'] ) ? '1' : '';
         } elseif ( $page === 'broken-links' ) {
             $existing['broken_links_enabled'] = ! empty( $input['broken_links_enabled'] ) ? '1' : '';
+        } elseif ( $page === 'tracking' ) {
+            // Textarea fields — contain raw HTML/JS, only wp_unslash.
+            $tracking_textarea_fields = [
+                'tracking_live_chat',
+                'tracking_cookie_consent',
+                'tracking_head_scripts',
+                'tracking_body_scripts',
+                'tracking_footer_scripts',
+            ];
+            foreach ( $tracking_textarea_fields as $key ) {
+                if ( isset( $input[ $key ] ) ) {
+                    $existing[ $key ] = wp_unslash( $input[ $key ] );
+                }
+            }
         }
 
         return $existing;

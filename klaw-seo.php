@@ -61,6 +61,7 @@ function klaw_seo_init() {
     require_once KLAW_SEO_DIR . 'includes/class-broken-links.php';
     require_once KLAW_SEO_DIR . 'includes/class-alt-text.php';
     require_once KLAW_SEO_DIR . 'includes/class-robots.php';
+    require_once KLAW_SEO_DIR . 'includes/class-tracking-output.php';
     require_once KLAW_SEO_DIR . 'admin/class-settings-page.php';
     require_once KLAW_SEO_DIR . 'admin/class-admin-columns.php';
 
@@ -72,6 +73,7 @@ function klaw_seo_init() {
     new Klaw_SEO_Broken_Links();
     new Klaw_SEO_Alt_Text();
     new Klaw_SEO_Robots();
+    new Klaw_SEO_Tracking_Output();
     new Klaw_SEO_Settings();
     new Klaw_SEO_Admin_Columns();
 }

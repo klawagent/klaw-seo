@@ -134,7 +134,7 @@ class Klaw_SEO_Schema {
 
         // Social profiles.
         $social = [];
-        foreach ( [ 'social_facebook', 'social_instagram', 'social_twitter', 'social_linkedin' ] as $key ) {
+        foreach ( [ 'social_facebook', 'social_instagram', 'social_twitter', 'social_linkedin', 'social_pinterest', 'social_youtube' ] as $key ) {
             if ( ! empty( $s[ $key ] ) ) {
                 $social[] = $s[ $key ];
             }
