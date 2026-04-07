@@ -142,12 +142,25 @@ class Klaw_SEO_Redirects {
 
         $id     = absint( $_POST['redirect_id'] ?? 0 );
         $source = sanitize_text_field( $_POST['redirect_source'] ?? '' );
-        $target = esc_url_raw( $_POST['redirect_target'] ?? '' );
+        $target = sanitize_text_field( $_POST['redirect_target'] ?? '' );
         $type   = absint( $_POST['redirect_type'] ?? 301 );
+
+        // Normalize target: if it looks like an external domain (has a dot,
+        // doesn't start with / or http), prepend https://.
+        if ( $target && strpos( $target, '/' ) !== 0 && strpos( $target, 'http' ) !== 0 && strpos( $target, '.' ) !== false ) {
+            $target = 'https://' . $target;
+        }
+        $target = esc_url_raw( $target );
 
         if ( ! $source ) {
             wp_safe_redirect( admin_url( 'admin.php?page=klaw-seo-redirects&error=missing_source' ) );
             exit;
+        }
+
+        // If user entered a full URL, extract just the path.
+        if ( preg_match( '#^https?://#i', $source ) ) {
+            $parsed_path = wp_parse_url( $source, PHP_URL_PATH );
+            $source      = $parsed_path ?: '/';
         }
 
         // Normalize source to start with /.
@@ -255,11 +268,23 @@ class Klaw_SEO_Redirects {
             }
 
             $source = sanitize_text_field( $row[0] );
-            $target = esc_url_raw( $row[1] );
+            $target = sanitize_text_field( $row[1] );
             $type   = isset( $row[2] ) ? absint( $row[2] ) : 301;
+
+            // Normalize target: external domain without protocol gets https://.
+            if ( $target && strpos( $target, '/' ) !== 0 && strpos( $target, 'http' ) !== 0 && strpos( $target, '.' ) !== false ) {
+                $target = 'https://' . $target;
+            }
+            $target = esc_url_raw( $target );
 
             if ( ! $source ) {
                 continue;
+            }
+
+            // If full URL provided, extract just the path.
+            if ( preg_match( '#^https?://#i', $source ) ) {
+                $parsed_path = wp_parse_url( $source, PHP_URL_PATH );
+                $source      = $parsed_path ?: '/';
             }
 
             if ( strpos( $source, '/' ) !== 0 ) {

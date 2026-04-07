@@ -75,7 +75,8 @@ if ( $edit_id ) {
                 <td>
                     <input type="text" id="klaw-redirect-target" name="redirect_target"
                            value="<?php echo esc_attr( $editing->target_url ?? '' ); ?>" class="regular-text"
-                           placeholder="/new-page/ or https://example.com/page" required />
+                           placeholder="/new-page/ or order.example.com/page" required />
+                    <p class="description"><?php esc_html_e( 'Relative path, full URL, or external domain (https:// added automatically).', 'klaw-seo' ); ?></p>
                 </td>
             </tr>
             <tr>
