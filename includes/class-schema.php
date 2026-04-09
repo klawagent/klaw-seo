@@ -227,8 +227,8 @@ class Klaw_SEO_Schema {
 
         // Get field values from post meta.
         $event_date = $date_key ? get_post_meta( $post_id, $date_key, true ) : '';
-        $time_start = get_post_meta( $post_id, '_cherrywood_event_time_start', true );
-        $time_end   = get_post_meta( $post_id, '_cherrywood_event_time_end', true );
+        $time_start = get_post_meta( $post_id, '_klaw_event_time_start', true );
+        $time_end   = get_post_meta( $post_id, '_klaw_event_time_end', true );
         $desc       = $desc_key ? get_post_meta( $post_id, $desc_key, true ) : '';
 
         // Venue: if the value looks like a meta key, try to pull from post meta.
