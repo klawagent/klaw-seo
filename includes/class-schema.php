@@ -222,13 +222,13 @@ class Klaw_SEO_Schema {
 
         // Read mapped field keys.
         $date_key  = $s['event_date_field'] ?? '';
-        $time_key  = $s['event_time_field'] ?? '';
         $venue_key = $s['event_venue_field'] ?? '';
         $desc_key  = $s['event_description_field'] ?? '';
 
         // Get field values from post meta.
         $event_date = $date_key ? get_post_meta( $post_id, $date_key, true ) : '';
-        $event_time = $time_key ? get_post_meta( $post_id, $time_key, true ) : '';
+        $time_start = get_post_meta( $post_id, '_cherrywood_event_time_start', true );
+        $time_end   = get_post_meta( $post_id, '_cherrywood_event_time_end', true );
         $desc       = $desc_key ? get_post_meta( $post_id, $desc_key, true ) : '';
 
         // Venue: if the value looks like a meta key, try to pull from post meta.
@@ -243,13 +243,17 @@ class Klaw_SEO_Schema {
             $desc = $post->post_excerpt ?: wp_trim_words( wp_strip_all_tags( $post->post_content ), 30, '...' );
         }
 
-        // Build start date.
+        // Build ISO 8601 start/end dates.
         $start_date = '';
+        $end_date   = '';
         if ( $event_date ) {
-            $start_date = $event_date;
-            if ( $event_time ) {
-                // Combine date and time.
-                $start_date = rtrim( $event_date, 'T' ) . 'T' . $event_time;
+            if ( $time_start ) {
+                $start_date = $event_date . 'T' . $time_start . ':00';
+            } else {
+                $start_date = $event_date;
+            }
+            if ( $time_end ) {
+                $end_date = $event_date . 'T' . $time_end . ':00';
             }
         }
 
@@ -264,12 +268,27 @@ class Klaw_SEO_Schema {
         if ( $start_date ) {
             $schema['startDate'] = $start_date;
         }
+        if ( $end_date ) {
+            $schema['endDate'] = $end_date;
+        }
 
         if ( $venue ) {
-            $schema['location'] = [
+            $location = [
                 '@type' => 'Place',
                 'name'  => $venue,
             ];
+            $street = $s['business_street'] ?? '';
+            if ( $street ) {
+                $location['address'] = [
+                    '@type'           => 'PostalAddress',
+                    'streetAddress'   => $street,
+                    'addressLocality' => $s['business_city'] ?? '',
+                    'addressRegion'   => $s['business_state'] ?? '',
+                    'postalCode'      => $s['business_zip'] ?? '',
+                    'addressCountry'  => $s['business_country'] ?? 'US',
+                ];
+            }
+            $schema['location'] = $location;
         }
 
         if ( has_post_thumbnail( $post_id ) ) {
@@ -285,6 +304,12 @@ class Klaw_SEO_Schema {
             '@type' => 'Organization',
             'name'  => get_bloginfo( 'name' ),
             'url'   => home_url( '/' ),
+        ];
+
+        // Performer — default to event title.
+        $schema['performer'] = [
+            '@type' => 'PerformingGroup',
+            'name'  => get_the_title( $post_id ),
         ];
 
         return $schema;
