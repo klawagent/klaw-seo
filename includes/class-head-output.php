@@ -72,6 +72,16 @@ class Klaw_SEO_Head_Output {
             }
         }
 
+        // Allow other plugins (e.g. Klaw Events) to supply a custom title for
+        // post type archive pages like /events/.
+        if ( is_post_type_archive() ) {
+            $pt_slug      = get_query_var( 'post_type' );
+            $custom_title = apply_filters( 'klaw_seo_archive_title', '', $pt_slug );
+            if ( $custom_title ) {
+                return [ 'title' => $custom_title ];
+            }
+        }
+
         // Apply title template — returns full title string, so remove other parts.
         $settings = get_option( 'klaw_seo_settings', [] );
         $sep      = $settings['title_separator'] ?? '|';
@@ -124,10 +134,18 @@ class Klaw_SEO_Head_Output {
             $desc = wp_strip_all_tags( $desc );
             $desc = mb_substr( $desc, 0, 160 );
         } elseif ( is_post_type_archive() ) {
-            // Use the post type's registered description if one was set.
-            $pt = get_post_type_object( get_query_var( 'post_type' ) );
-            if ( $pt && ! empty( $pt->description ) ) {
-                $desc = wp_strip_all_tags( $pt->description );
+            // Allow other plugins (e.g. Klaw Events) to supply a custom
+            // description for post type archive pages like /events/.
+            $pt_slug = get_query_var( 'post_type' );
+            $desc    = apply_filters( 'klaw_seo_archive_description', '', $pt_slug );
+
+            // Fall back to the post type's registered description if the
+            // filter didn't return anything.
+            if ( ! $desc ) {
+                $pt = get_post_type_object( $pt_slug );
+                if ( $pt && ! empty( $pt->description ) ) {
+                    $desc = wp_strip_all_tags( $pt->description );
+                }
             }
         }
 
