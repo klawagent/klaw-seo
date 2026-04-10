@@ -174,7 +174,6 @@ class Klaw_SEO_Settings {
             'social_linkedin',
             'social_pinterest',
             'social_youtube',
-            'default_og_image',
             'business_gbp_url',
         ];
 

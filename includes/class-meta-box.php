@@ -3,7 +3,7 @@
  * Klaw SEO — Meta Box
  *
  * Adds SEO meta box to all public post types with tabs:
- * General (title, description, preview, noindex), Social (OG overrides), Advanced (canonical, FAQ).
+ * General (title, description, preview, noindex), Advanced (canonical, FAQ).
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -45,9 +45,6 @@ class Klaw_SEO_Meta_Box {
         $title       = get_post_meta( $post->ID, '_klaw_seo_title', true );
         $description = get_post_meta( $post->ID, '_klaw_seo_description', true );
         $noindex     = get_post_meta( $post->ID, '_klaw_seo_noindex', true );
-        $og_title    = get_post_meta( $post->ID, '_klaw_seo_og_title', true );
-        $og_desc     = get_post_meta( $post->ID, '_klaw_seo_og_description', true );
-        $og_image    = get_post_meta( $post->ID, '_klaw_seo_og_image', true );
         $canonical   = get_post_meta( $post->ID, '_klaw_seo_canonical', true );
         $faq         = get_post_meta( $post->ID, '_klaw_seo_faq', true );
 
@@ -65,7 +62,6 @@ class Klaw_SEO_Meta_Box {
         <div class="klaw-seo-meta-box">
             <div class="klaw-seo-tabs">
                 <button type="button" class="klaw-seo-tab active" data-tab="general">General</button>
-                <button type="button" class="klaw-seo-tab" data-tab="social">Social</button>
                 <button type="button" class="klaw-seo-tab" data-tab="advanced">Advanced</button>
             </div>
 
@@ -105,36 +101,6 @@ class Klaw_SEO_Meta_Box {
                             <?php checked( $noindex, '1' ); ?> />
                         Hide from search engines (noindex)
                     </label>
-                </div>
-            </div>
-
-            <!-- Social Tab -->
-            <div class="klaw-seo-tab-content" data-tab="social">
-                <div class="klaw-seo-field">
-                    <label for="klaw-seo-og-title">Open Graph Title</label>
-                    <input type="text" id="klaw-seo-og-title" name="klaw_seo_og_title"
-                           value="<?php echo esc_attr( $og_title ); ?>"
-                           placeholder="Defaults to SEO title" />
-                </div>
-
-                <div class="klaw-seo-field">
-                    <label for="klaw-seo-og-description">Open Graph Description</label>
-                    <textarea id="klaw-seo-og-description" name="klaw_seo_og_description" rows="2"
-                              placeholder="Defaults to meta description"
-                    ><?php echo esc_textarea( $og_desc ); ?></textarea>
-                </div>
-
-                <div class="klaw-seo-field">
-                    <label>Open Graph Image</label>
-                    <div class="klaw-seo-image-picker">
-                        <input type="hidden" id="klaw-seo-og-image" name="klaw_seo_og_image"
-                               value="<?php echo esc_url( $og_image ); ?>" />
-                        <?php if ( $og_image ) : ?>
-                            <img src="<?php echo esc_url( $og_image ); ?>" class="klaw-seo-og-preview-img" />
-                        <?php endif; ?>
-                        <button type="button" class="button klaw-seo-pick-image">Select Image</button>
-                        <button type="button" class="button klaw-seo-remove-image" <?php echo $og_image ? '' : 'style="display:none"'; ?>>Remove</button>
-                    </div>
                 </div>
             </div>
 
@@ -188,19 +154,17 @@ class Klaw_SEO_Meta_Box {
         }
 
         $fields = [
-            'klaw_seo_title'          => '_klaw_seo_title',
-            'klaw_seo_description'    => '_klaw_seo_description',
-            'klaw_seo_og_title'       => '_klaw_seo_og_title',
-            'klaw_seo_og_description' => '_klaw_seo_og_description',
-            'klaw_seo_canonical'      => '_klaw_seo_canonical',
+            'klaw_seo_title'       => '_klaw_seo_title',
+            'klaw_seo_description' => '_klaw_seo_description',
+            'klaw_seo_canonical'   => '_klaw_seo_canonical',
         ];
 
         foreach ( $fields as $post_key => $meta_key ) {
             $value = sanitize_text_field( $_POST[ $post_key ] ?? '' );
-            if ( in_array( $post_key, [ 'klaw_seo_description', 'klaw_seo_og_description' ], true ) ) {
+            if ( $post_key === 'klaw_seo_description' ) {
                 $value = sanitize_textarea_field( $_POST[ $post_key ] ?? '' );
             }
-            if ( in_array( $post_key, [ 'klaw_seo_canonical' ], true ) ) {
+            if ( $post_key === 'klaw_seo_canonical' ) {
                 $value = esc_url_raw( $_POST[ $post_key ] ?? '' );
             }
             if ( $value ) {
@@ -208,14 +172,6 @@ class Klaw_SEO_Meta_Box {
             } else {
                 delete_post_meta( $post_id, $meta_key );
             }
-        }
-
-        // OG Image (URL field)
-        $og_image = esc_url_raw( $_POST['klaw_seo_og_image'] ?? '' );
-        if ( $og_image ) {
-            update_post_meta( $post_id, '_klaw_seo_og_image', $og_image );
-        } else {
-            delete_post_meta( $post_id, '_klaw_seo_og_image' );
         }
 
         // Noindex

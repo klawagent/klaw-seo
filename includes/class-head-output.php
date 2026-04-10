@@ -102,8 +102,6 @@ class Klaw_SEO_Head_Output {
 
         $this->output_description();
         $this->output_canonical();
-        $this->output_open_graph();
-        $this->output_twitter();
 
         echo "<!-- /Klaw SEO -->\n\n";
     }
@@ -123,6 +121,12 @@ class Klaw_SEO_Head_Output {
             $desc = term_description();
             $desc = wp_strip_all_tags( $desc );
             $desc = mb_substr( $desc, 0, 160 );
+        } elseif ( is_post_type_archive() ) {
+            // Use the post type's registered description if one was set.
+            $pt = get_post_type_object( get_query_var( 'post_type' ) );
+            if ( $pt && ! empty( $pt->description ) ) {
+                $desc = wp_strip_all_tags( $pt->description );
+            }
         }
 
         // Universal fallback chain: Klaw SEO default description -> WP tagline.
@@ -178,106 +182,6 @@ class Klaw_SEO_Head_Output {
 
         if ( $url && ! is_wp_error( $url ) ) {
             printf( '<link rel="canonical" href="%s" />' . "\n", esc_url( $url ) );
-        }
-    }
-
-    /**
-     * Open Graph tags.
-     */
-    private function output_open_graph() {
-        $tags = [];
-
-        $tags['og:site_name'] = get_bloginfo( 'name' );
-        $tags['og:locale']    = get_locale();
-
-        if ( is_singular() ) {
-            $id = get_the_ID();
-
-            $tags['og:type']  = ( get_post_type() === 'page' ) ? 'website' : 'article';
-            $tags['og:url']   = get_permalink( $id );
-            $tags['og:title'] = get_post_meta( $id, '_klaw_seo_og_title', true )
-                                ?: get_post_meta( $id, '_klaw_seo_title', true )
-                                ?: get_the_title( $id );
-
-            $tags['og:description'] = get_post_meta( $id, '_klaw_seo_og_description', true )
-                                      ?: get_post_meta( $id, '_klaw_seo_description', true )
-                                      ?: $this->auto_description()
-                                      ?: $this->site_default_description();
-
-            // Image: custom OG > featured image > site default.
-            $og_image = get_post_meta( $id, '_klaw_seo_og_image', true );
-            if ( ! $og_image && has_post_thumbnail( $id ) ) {
-                $og_image = get_the_post_thumbnail_url( $id, 'large' );
-            }
-            if ( ! $og_image ) {
-                $og_image = klaw_seo_get( 'default_og_image' );
-            }
-            if ( $og_image ) {
-                $tags['og:image'] = $og_image;
-            }
-        } elseif ( is_front_page() ) {
-            $tags['og:type']        = 'website';
-            $tags['og:url']         = home_url( '/' );
-            $tags['og:title']       = get_bloginfo( 'name' );
-            $tags['og:description'] = $this->site_default_description();
-
-            $default_img = klaw_seo_get( 'default_og_image' );
-            if ( $default_img ) {
-                $tags['og:image'] = $default_img;
-            }
-        }
-
-        foreach ( $tags as $prop => $content ) {
-            if ( $content ) {
-                printf( '<meta property="%s" content="%s" />' . "\n", esc_attr( $prop ), esc_attr( $content ) );
-            }
-        }
-    }
-
-    /**
-     * Twitter Card tags.
-     */
-    private function output_twitter() {
-        if ( ! is_singular() && ! is_front_page() ) {
-            return;
-        }
-
-        $id = is_singular() ? get_the_ID() : 0;
-
-        $title = $id ? ( get_post_meta( $id, '_klaw_seo_og_title', true )
-                        ?: get_post_meta( $id, '_klaw_seo_title', true )
-                        ?: get_the_title( $id ) )
-                     : get_bloginfo( 'name' );
-
-        $desc = $id ? ( get_post_meta( $id, '_klaw_seo_og_description', true )
-                        ?: get_post_meta( $id, '_klaw_seo_description', true )
-                        ?: $this->auto_description() )
-                    : '';
-
-        // Universal fallback.
-        if ( ! $desc ) {
-            $desc = $this->site_default_description();
-        }
-
-        $image = '';
-        if ( $id ) {
-            $image = get_post_meta( $id, '_klaw_seo_og_image', true );
-            if ( ! $image && has_post_thumbnail( $id ) ) {
-                $image = get_the_post_thumbnail_url( $id, 'large' );
-            }
-        }
-        if ( ! $image ) {
-            $image = klaw_seo_get( 'default_og_image' );
-        }
-
-        echo '<meta name="twitter:card" content="' . ( $image ? 'summary_large_image' : 'summary' ) . '" />' . "\n";
-        printf( '<meta name="twitter:title" content="%s" />' . "\n", esc_attr( $title ) );
-
-        if ( $desc ) {
-            printf( '<meta name="twitter:description" content="%s" />' . "\n", esc_attr( $desc ) );
-        }
-        if ( $image ) {
-            printf( '<meta name="twitter:image" content="%s" />' . "\n", esc_url( $image ) );
         }
     }
 
