@@ -119,11 +119,15 @@ class Klaw_SEO_Head_Output {
             if ( ! $desc ) {
                 $desc = $this->auto_description();
             }
+            // Static front page fallback: use tagline when the page itself has no description.
+            if ( ! $desc && is_front_page() ) {
+                $desc = get_bloginfo( 'description' );
+            }
         } elseif ( is_category() || is_tag() || is_tax() ) {
             $desc = term_description();
             $desc = wp_strip_all_tags( $desc );
             $desc = mb_substr( $desc, 0, 160 );
-        } elseif ( is_front_page() ) {
+        } elseif ( is_front_page() || is_home() ) {
             $desc = get_bloginfo( 'description' );
         }
 
@@ -183,6 +187,10 @@ class Klaw_SEO_Head_Output {
             $tags['og:description'] = get_post_meta( $id, '_klaw_seo_og_description', true )
                                       ?: get_post_meta( $id, '_klaw_seo_description', true )
                                       ?: $this->auto_description();
+            // Static front page fallback to tagline.
+            if ( ! $tags['og:description'] && is_front_page() ) {
+                $tags['og:description'] = get_bloginfo( 'description' );
+            }
 
             // Image: custom OG > featured image > site default.
             $og_image = get_post_meta( $id, '_klaw_seo_og_image', true );
@@ -233,6 +241,11 @@ class Klaw_SEO_Head_Output {
                         ?: get_post_meta( $id, '_klaw_seo_description', true )
                         ?: $this->auto_description() )
                     : get_bloginfo( 'description' );
+
+        // Static front page fallback to tagline.
+        if ( ! $desc && is_front_page() ) {
+            $desc = get_bloginfo( 'description' );
+        }
 
         $image = '';
         if ( $id ) {
