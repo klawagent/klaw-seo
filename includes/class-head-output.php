@@ -15,8 +15,43 @@ class Klaw_SEO_Head_Output {
         add_action( 'wp_head', [ $this, 'output' ], 1 );
         add_filter( 'document_title_parts', [ $this, 'filter_title' ], 99 );
         add_filter( 'get_the_archive_title', [ $this, 'clean_archive_title' ], 99 );
+        add_filter( 'wp_robots', [ $this, 'filter_wp_robots' ], 20 );
         // Remove WordPress default canonical to avoid duplicates.
         remove_action( 'wp_head', 'rel_canonical' );
+    }
+
+    /**
+     * Explicitly set index/follow (or noindex/nofollow) on the wp_robots tag.
+     *
+     * WordPress's default behavior is to omit "index, follow" because it's
+     * implied. We add it explicitly so users checking the page source get
+     * unambiguous confirmation.
+     *
+     * @param  array $robots Robots directives array.
+     * @return array
+     */
+    public function filter_wp_robots( $robots ) {
+        $noindex = false;
+
+        if ( is_singular() ) {
+            $meta = get_post_meta( get_the_ID(), '_klaw_seo_noindex', true );
+            if ( $meta === '1' ) {
+                $noindex = true;
+            }
+        }
+
+        // Clear any conflicting values before setting ours.
+        unset( $robots['index'], $robots['follow'], $robots['noindex'], $robots['nofollow'] );
+
+        if ( $noindex ) {
+            $robots['noindex']  = true;
+            $robots['nofollow'] = true;
+        } else {
+            $robots['index']  = true;
+            $robots['follow'] = true;
+        }
+
+        return $robots;
     }
 
     /**
@@ -67,7 +102,6 @@ class Klaw_SEO_Head_Output {
 
         $this->output_description();
         $this->output_canonical();
-        $this->output_robots();
         $this->output_open_graph();
         $this->output_twitter();
 
@@ -125,18 +159,6 @@ class Klaw_SEO_Head_Output {
 
         if ( $url && ! is_wp_error( $url ) ) {
             printf( '<link rel="canonical" href="%s" />' . "\n", esc_url( $url ) );
-        }
-    }
-
-    /**
-     * Robots meta tag.
-     */
-    private function output_robots() {
-        if ( is_singular() ) {
-            $noindex = get_post_meta( get_the_ID(), '_klaw_seo_noindex', true );
-            if ( $noindex === '1' ) {
-                echo '<meta name="robots" content="noindex, follow" />' . "\n";
-            }
         }
     }
 
