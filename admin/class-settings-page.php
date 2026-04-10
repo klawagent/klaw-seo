@@ -117,6 +117,7 @@ class Klaw_SEO_Settings {
             'title_template_archive',
             'title_template_home',
             'description_source',
+            'default_meta_description',
             'business_name',
             'business_type',
             'business_street',
@@ -153,7 +154,7 @@ class Klaw_SEO_Settings {
 
         foreach ( $text_fields as $key ) {
             if ( isset( $input[ $key ] ) ) {
-                if ( in_array( $key, [ 'business_hours', 'robots_content' ], true ) ) {
+                if ( in_array( $key, [ 'business_hours', 'robots_content', 'default_meta_description' ], true ) ) {
                     $existing[ $key ] = sanitize_textarea_field( $input[ $key ] );
                 } elseif ( in_array( $key, [ 'business_email', 'broken_links_email' ], true ) ) {
                     $existing[ $key ] = sanitize_email( $input[ $key ] );

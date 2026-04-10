@@ -15,6 +15,7 @@ $tpl_page  = $options['title_template_page'] ?? '{post_title} {sep} {site_title}
 $tpl_arch  = $options['title_template_archive'] ?? '{archive_title} {sep} {site_title}';
 $tpl_home  = $options['title_template_home'] ?? '{site_title} {sep} {tagline}';
 $desc_src  = $options['description_source'] ?? 'excerpt_first';
+$default_desc = $options['default_meta_description'] ?? '';
 $opt_name  = Klaw_SEO_Settings::OPTION;
 ?>
 
@@ -104,6 +105,20 @@ $opt_name  = Klaw_SEO_Settings::OPTION;
                 </label>
             </fieldset>
             <p class="description"><?php esc_html_e( 'Controls auto-generated meta descriptions when none is set manually.', 'klaw-seo' ); ?></p>
+        </td>
+    </tr>
+
+    <tr>
+        <th scope="row">
+            <label for="klaw-default-desc"><?php esc_html_e( 'Default Meta Description', 'klaw-seo' ); ?></label>
+        </th>
+        <td>
+            <textarea id="klaw-default-desc" name="<?php echo esc_attr( $opt_name ); ?>[default_meta_description]"
+                      rows="3" class="large-text"
+                      placeholder="<?php esc_attr_e( 'e.g. Austin\'s neighborhood coffeehouse and brunch spot serving locals since 2009.', 'klaw-seo' ); ?>"><?php echo esc_textarea( $default_desc ); ?></textarea>
+            <p class="description">
+                <?php esc_html_e( 'Used as the fallback meta description for any page (including the homepage) that does not have its own description. Aim for 130–160 characters. Overrides the WordPress tagline.', 'klaw-seo' ); ?>
+            </p>
         </td>
     </tr>
 </table>

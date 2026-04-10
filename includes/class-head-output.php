@@ -119,21 +119,36 @@ class Klaw_SEO_Head_Output {
             if ( ! $desc ) {
                 $desc = $this->auto_description();
             }
-            // Static front page fallback: use tagline when the page itself has no description.
-            if ( ! $desc && is_front_page() ) {
-                $desc = get_bloginfo( 'description' );
-            }
         } elseif ( is_category() || is_tag() || is_tax() ) {
             $desc = term_description();
             $desc = wp_strip_all_tags( $desc );
             $desc = mb_substr( $desc, 0, 160 );
-        } elseif ( is_front_page() || is_home() ) {
-            $desc = get_bloginfo( 'description' );
+        }
+
+        // Universal fallback chain: Klaw SEO default description -> WP tagline.
+        if ( ! $desc ) {
+            $desc = $this->site_default_description();
         }
 
         if ( $desc ) {
             printf( '<meta name="description" content="%s" />' . "\n", esc_attr( $desc ) );
         }
+    }
+
+    /**
+     * Get the site-wide fallback description.
+     *
+     * Priority: Klaw SEO "Default Meta Description" setting -> WordPress tagline.
+     *
+     * @return string
+     */
+    private function site_default_description() {
+        $settings = get_option( 'klaw_seo_settings', [] );
+        $default  = trim( $settings['default_meta_description'] ?? '' );
+        if ( $default ) {
+            return $default;
+        }
+        return (string) get_bloginfo( 'description' );
     }
 
     /**
@@ -186,11 +201,8 @@ class Klaw_SEO_Head_Output {
 
             $tags['og:description'] = get_post_meta( $id, '_klaw_seo_og_description', true )
                                       ?: get_post_meta( $id, '_klaw_seo_description', true )
-                                      ?: $this->auto_description();
-            // Static front page fallback to tagline.
-            if ( ! $tags['og:description'] && is_front_page() ) {
-                $tags['og:description'] = get_bloginfo( 'description' );
-            }
+                                      ?: $this->auto_description()
+                                      ?: $this->site_default_description();
 
             // Image: custom OG > featured image > site default.
             $og_image = get_post_meta( $id, '_klaw_seo_og_image', true );
@@ -207,7 +219,7 @@ class Klaw_SEO_Head_Output {
             $tags['og:type']        = 'website';
             $tags['og:url']         = home_url( '/' );
             $tags['og:title']       = get_bloginfo( 'name' );
-            $tags['og:description'] = get_bloginfo( 'description' );
+            $tags['og:description'] = $this->site_default_description();
 
             $default_img = klaw_seo_get( 'default_og_image' );
             if ( $default_img ) {
@@ -240,11 +252,11 @@ class Klaw_SEO_Head_Output {
         $desc = $id ? ( get_post_meta( $id, '_klaw_seo_og_description', true )
                         ?: get_post_meta( $id, '_klaw_seo_description', true )
                         ?: $this->auto_description() )
-                    : get_bloginfo( 'description' );
+                    : '';
 
-        // Static front page fallback to tagline.
-        if ( ! $desc && is_front_page() ) {
-            $desc = get_bloginfo( 'description' );
+        // Universal fallback.
+        if ( ! $desc ) {
+            $desc = $this->site_default_description();
         }
 
         $image = '';
