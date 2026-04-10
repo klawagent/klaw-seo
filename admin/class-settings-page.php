@@ -36,23 +36,37 @@ class Klaw_SEO_Settings {
 
     /**
      * Constructor — register hooks.
+     *
+     * Translation calls are deferred to get_submenus() because WordPress 6.7+
+     * warns when __() is called before the text domain is loaded at init.
      */
     public function __construct() {
-        $this->submenus = [
-            'general'        => __( 'General', 'klaw-seo' ),
-            'social'         => __( 'Social', 'klaw-seo' ),
-            'local-business' => __( 'Local Business', 'klaw-seo' ),
-            'schema-health'  => __( 'Schema & Health', 'klaw-seo' ),
-            'sitemaps'       => __( 'Sitemaps', 'klaw-seo' ),
-            'redirects'      => __( 'Redirects', 'klaw-seo' ),
-            'robots'         => __( 'Robots.txt', 'klaw-seo' ),
-            'alt-text'       => __( 'Alt Text', 'klaw-seo' ),
-            'broken-links'   => __( 'Broken Links', 'klaw-seo' ),
-            'tracking'       => __( 'Tracking', 'klaw-seo' ),
-        ];
-
         add_action( 'admin_menu', [ $this, 'register_menus' ] );
         add_action( 'admin_init', [ $this, 'register_settings' ] );
+    }
+
+    /**
+     * Build and return the submenus array. Called lazily so translation
+     * functions aren't invoked before the init action.
+     *
+     * @return array
+     */
+    private function get_submenus() {
+        if ( empty( $this->submenus ) ) {
+            $this->submenus = [
+                'general'        => __( 'General', 'klaw-seo' ),
+                'social'         => __( 'Social', 'klaw-seo' ),
+                'local-business' => __( 'Local Business', 'klaw-seo' ),
+                'schema-health'  => __( 'Schema & Health', 'klaw-seo' ),
+                'sitemaps'       => __( 'Sitemaps', 'klaw-seo' ),
+                'redirects'      => __( 'Redirects', 'klaw-seo' ),
+                'robots'         => __( 'Robots.txt', 'klaw-seo' ),
+                'alt-text'       => __( 'Alt Text', 'klaw-seo' ),
+                'broken-links'   => __( 'Broken Links', 'klaw-seo' ),
+                'tracking'       => __( 'Tracking', 'klaw-seo' ),
+            ];
+        }
+        return $this->submenus;
     }
 
     /**
@@ -72,7 +86,7 @@ class Klaw_SEO_Settings {
 
         // First submenu replaces the default duplicate.
         $first = true;
-        foreach ( $this->submenus as $slug => $label ) {
+        foreach ( $this->get_submenus() as $slug => $label ) {
             add_submenu_page(
                 self::SLUG,
                 $label . ' — Klaw SEO',
@@ -253,12 +267,19 @@ class Klaw_SEO_Settings {
         $screen  = get_current_screen();
         $tab     = $this->get_current_tab( $screen );
         $options = get_option( self::OPTION, [] );
+
+        // Defensive: get_option can return bool false if the option value
+        // was saved as a non-array (corruption, legacy data, or a plugin
+        // filtering the option). Normalize to array so views don't fatal.
+        if ( ! is_array( $options ) ) {
+            $options = [];
+        }
         ?>
         <div class="wrap klaw-seo-settings">
             <h1><?php esc_html_e( 'Klaw SEO', 'klaw-seo' ); ?></h1>
 
             <nav class="nav-tab-wrapper klaw-seo-nav">
-                <?php foreach ( $this->submenus as $slug => $label ) :
+                <?php foreach ( $this->get_submenus() as $slug => $label ) :
                     $url    = admin_url( 'admin.php?page=' . ( $slug === 'general' ? self::SLUG : self::SLUG . '-' . $slug ) );
                     $active = ( $tab === $slug ) ? ' nav-tab-active' : '';
                     ?>
@@ -300,7 +321,7 @@ class Klaw_SEO_Settings {
 
         $page = sanitize_text_field( $_GET['page'] ?? self::SLUG );
 
-        foreach ( $this->submenus as $slug => $label ) {
+        foreach ( $this->get_submenus() as $slug => $label ) {
             $menu_slug = ( $slug === 'general' ) ? self::SLUG : self::SLUG . '-' . $slug;
             if ( $page === $menu_slug ) {
                 return $slug;
@@ -322,6 +343,10 @@ class Klaw_SEO_Settings {
      * @param array  $options     Current options array.
      */
     public static function render_toggle( $key, $label, $description, $options ) {
+        // Defensive: callers should pass an array, but fall back if not.
+        if ( ! is_array( $options ) ) {
+            $options = [];
+        }
         // Default to ON if key hasn't been stored yet.
         $checked = array_key_exists( $key, $options ) ? ! empty( $options[ $key ] ) : true;
         ?>
