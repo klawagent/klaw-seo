@@ -75,10 +75,12 @@ class Klaw_SEO_Head_Output {
         // Allow other plugins (e.g. Klaw Events) to supply a custom title for
         // post type archive pages like /events/.
         if ( is_post_type_archive() ) {
-            $pt_slug      = get_query_var( 'post_type' );
-            $custom_title = apply_filters( 'klaw_seo_archive_title', '', $pt_slug );
-            if ( $custom_title ) {
-                return [ 'title' => $custom_title ];
+            $pt_slug = $this->current_archive_post_type();
+            if ( $pt_slug ) {
+                $custom_title = apply_filters( 'klaw_seo_archive_title', '', $pt_slug );
+                if ( $custom_title ) {
+                    return [ 'title' => $custom_title ];
+                }
             }
         }
 
@@ -136,15 +138,16 @@ class Klaw_SEO_Head_Output {
         } elseif ( is_post_type_archive() ) {
             // Allow other plugins (e.g. Klaw Events) to supply a custom
             // description for post type archive pages like /events/.
-            $pt_slug = get_query_var( 'post_type' );
-            $desc    = apply_filters( 'klaw_seo_archive_description', '', $pt_slug );
+            $pt_slug = $this->current_archive_post_type();
+            if ( $pt_slug ) {
+                $desc = apply_filters( 'klaw_seo_archive_description', '', $pt_slug );
 
-            // Fall back to the post type's registered description if the
-            // filter didn't return anything.
-            if ( ! $desc ) {
-                $pt = get_post_type_object( $pt_slug );
-                if ( $pt && ! empty( $pt->description ) ) {
-                    $desc = wp_strip_all_tags( $pt->description );
+                // Fall back to the post type's registered description.
+                if ( ! $desc ) {
+                    $pt = get_post_type_object( $pt_slug );
+                    if ( $pt && ! empty( $pt->description ) ) {
+                        $desc = wp_strip_all_tags( $pt->description );
+                    }
                 }
             }
         }
@@ -157,6 +160,28 @@ class Klaw_SEO_Head_Output {
         if ( $desc ) {
             printf( '<meta name="description" content="%s" />' . "\n", esc_attr( $desc ) );
         }
+    }
+
+    /**
+     * Get the post type slug for the current post type archive page.
+     *
+     * Uses get_queried_object() as the primary source since WordPress
+     * populates it with a WP_Post_Type instance on these pages. Falls back
+     * to get_query_var('post_type') which can be an array on some setups.
+     *
+     * @return string Empty string if not on a resolvable post type archive.
+     */
+    private function current_archive_post_type() {
+        $queried = get_queried_object();
+        if ( $queried instanceof WP_Post_Type ) {
+            return $queried->name;
+        }
+
+        $pt = get_query_var( 'post_type' );
+        if ( is_array( $pt ) ) {
+            $pt = reset( $pt );
+        }
+        return is_string( $pt ) ? $pt : '';
     }
 
     /**
