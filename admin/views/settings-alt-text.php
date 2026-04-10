@@ -9,12 +9,13 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-$opt_name    = Klaw_SEO_Settings::OPTION;
-$default_on  = ! empty( $options['alt_text_default_enabled'] );
-$ai_on       = ! empty( $options['alt_text_ai_enabled'] );
-$ai_provider = $options['alt_text_ai_provider'] ?? 'none';
-$key_claude  = $options['alt_text_ai_key_claude'] ?? '';
-$key_openai  = $options['alt_text_ai_key_openai'] ?? '';
+$opt_name       = Klaw_SEO_Settings::OPTION;
+$default_on     = ! empty( $options['alt_text_default_enabled'] );
+$ai_on          = ! empty( $options['alt_text_ai_enabled'] );
+$ai_provider    = $options['alt_text_ai_provider'] ?? 'none';
+$key_claude     = $options['alt_text_ai_key_claude'] ?? '';
+$key_openai     = $options['alt_text_ai_key_openai'] ?? '';
+$cron_frequency = $options['alt_text_cron_frequency'] ?? 'off';
 ?>
 
 <h2><?php esc_html_e( 'Alt Text Automation', 'klaw-seo' ); ?></h2>
@@ -28,6 +29,20 @@ $key_openai  = $options['alt_text_ai_key_openai'] ?? '';
                        value="1" <?php checked( $default_on ); ?> />
                 <?php esc_html_e( 'Automatically set alt text on upload using post title or cleaned filename', 'klaw-seo' ); ?>
             </label>
+        </td>
+    </tr>
+
+    <tr>
+        <th scope="row">
+            <label for="klaw-alt-cron-frequency"><?php esc_html_e( 'Scheduled Scan', 'klaw-seo' ); ?></label>
+        </th>
+        <td>
+            <select id="klaw-alt-cron-frequency" name="<?php echo esc_attr( $opt_name ); ?>[alt_text_cron_frequency]">
+                <option value="off" <?php selected( $cron_frequency, 'off' ); ?>><?php esc_html_e( 'Off', 'klaw-seo' ); ?></option>
+                <option value="daily" <?php selected( $cron_frequency, 'daily' ); ?>><?php esc_html_e( 'Daily', 'klaw-seo' ); ?></option>
+                <option value="weekly" <?php selected( $cron_frequency, 'weekly' ); ?>><?php esc_html_e( 'Weekly', 'klaw-seo' ); ?></option>
+            </select>
+            <p class="description"><?php esc_html_e( 'Run a background scan to fill alt text on images that bypassed the upload hook (WP-CLI imports, REST uploads, migrations). Processes up to 200 images per run and requires "Auto-fill Alt Text" to be enabled above.', 'klaw-seo' ); ?></p>
         </td>
     </tr>
 

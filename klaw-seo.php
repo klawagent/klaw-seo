@@ -45,6 +45,7 @@ register_activation_hook( __FILE__, 'klaw_seo_activate' );
  */
 function klaw_seo_deactivate() {
     wp_clear_scheduled_hook( 'klaw_seo_check_links' );
+    wp_clear_scheduled_hook( 'klaw_seo_alt_text_scan' );
     flush_rewrite_rules();
 }
 register_deactivation_hook( __FILE__, 'klaw_seo_deactivate' );

@@ -14,12 +14,83 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Klaw_SEO_Alt_Text {
 
     /**
+     * Cron hook name for scheduled scans.
+     */
+    const CRON_HOOK = 'klaw_seo_alt_text_scan';
+
+    /**
      * Constructor — register hooks.
      */
     public function __construct() {
         add_action( 'add_attachment', [ $this, 'auto_fill_alt' ] );
         add_action( 'wp_ajax_klaw_seo_bulk_alt_scan', [ $this, 'ajax_bulk_scan' ] );
         add_action( 'wp_ajax_klaw_seo_bulk_alt_update', [ $this, 'ajax_bulk_update' ] );
+        add_action( 'init', [ $this, 'schedule_scan' ] );
+        add_action( self::CRON_HOOK, [ $this, 'run_scheduled_scan' ] );
+    }
+
+    /**
+     * Schedule or unschedule the recurring scan based on settings.
+     */
+    public function schedule_scan() {
+        $settings  = get_option( 'klaw_seo_settings', [] );
+        $frequency = $settings['alt_text_cron_frequency'] ?? 'off';
+        $scheduled = wp_next_scheduled( self::CRON_HOOK );
+
+        if ( $frequency === 'off' ) {
+            if ( $scheduled ) {
+                wp_unschedule_event( $scheduled, self::CRON_HOOK );
+            }
+            return;
+        }
+
+        $recurrence = ( $frequency === 'weekly' ) ? 'weekly' : 'daily';
+
+        if ( ! $scheduled ) {
+            wp_schedule_event( time() + HOUR_IN_SECONDS, $recurrence, self::CRON_HOOK );
+        }
+    }
+
+    /**
+     * Run the scheduled scan — fills alt text on up to 200 images per run.
+     */
+    public function run_scheduled_scan() {
+        $settings = get_option( 'klaw_seo_settings', [] );
+
+        // Respect the master default-autofill toggle.
+        if ( empty( $settings['alt_text_default_enabled'] ) ) {
+            return;
+        }
+
+        global $wpdb;
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        $results = $wpdb->get_results(
+            "SELECT p.ID
+             FROM {$wpdb->posts} p
+             LEFT JOIN {$wpdb->postmeta} pm
+                ON p.ID = pm.post_id AND pm.meta_key = '_wp_attachment_image_alt'
+             WHERE p.post_type = 'attachment'
+               AND p.post_mime_type LIKE 'image/%'
+               AND (pm.meta_value IS NULL OR pm.meta_value = '')
+             ORDER BY p.ID DESC
+             LIMIT 200"
+        );
+
+        $updated = 0;
+        foreach ( $results as $row ) {
+            $alt = $this->generate_default_alt( $row->ID );
+            if ( $alt ) {
+                update_post_meta( $row->ID, '_wp_attachment_image_alt', sanitize_text_field( $alt ) );
+                $updated++;
+            }
+        }
+
+        update_option( 'klaw_seo_alt_text_last_scan', [
+            'time'    => time(),
+            'updated' => $updated,
+            'scanned' => count( $results ),
+        ], false );
     }
 
     /**

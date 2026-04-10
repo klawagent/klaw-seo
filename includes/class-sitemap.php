@@ -93,14 +93,18 @@ class Klaw_SEO_Sitemap {
         $types = $this->get_enabled_types( $settings );
 
         foreach ( $types as $type ) {
-            $count = $this->get_post_count( $type );
-            $pages = max( 1, ceil( $count / self::PER_PAGE ) );
+            $count   = $this->get_post_count( $type );
+            $pages   = max( 1, ceil( $count / self::PER_PAGE ) );
+            $lastmod = $this->get_type_lastmod( $type );
 
             for ( $i = 1; $i <= $pages; $i++ ) {
                 $suffix = $i > 1 ? '-' . $i : '';
                 $url    = home_url( "/sitemap-{$type}{$suffix}.xml" );
                 $xml   .= "  <sitemap>\n";
                 $xml   .= "    <loc>" . esc_url( $url ) . "</loc>\n";
+                if ( $lastmod ) {
+                    $xml .= "    <lastmod>" . esc_html( $lastmod ) . "</lastmod>\n";
+                }
                 $xml   .= "  </sitemap>\n";
             }
         }
@@ -192,6 +196,32 @@ class Klaw_SEO_Sitemap {
         }
 
         return $enabled;
+    }
+
+    /**
+     * Get the most recent modification time for a post type as ISO 8601.
+     *
+     * @param  string $type Post type.
+     * @return string       ISO 8601 datetime or empty string.
+     */
+    private function get_type_lastmod( $type ) {
+        global $wpdb;
+
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+        $mod = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT post_modified_gmt FROM {$wpdb->posts}
+                 WHERE post_type = %s AND post_status = 'publish'
+                 ORDER BY post_modified_gmt DESC LIMIT 1",
+                $type
+            )
+        );
+
+        if ( ! $mod || $mod === '0000-00-00 00:00:00' ) {
+            return '';
+        }
+
+        return mysql2date( 'Y-m-d\TH:i:sP', $mod, false );
     }
 
     /**

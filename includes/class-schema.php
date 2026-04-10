@@ -28,14 +28,24 @@ class Klaw_SEO_Schema {
     public function output() {
         $schemas = [];
 
-        $local = $this->local_business();
-        if ( $local ) {
-            $schemas[] = $local;
+        $website = $this->website();
+        if ( $website ) {
+            $schemas[] = $website;
+        }
+
+        $blog_posting = $this->blog_posting();
+        if ( $blog_posting ) {
+            $schemas[] = $blog_posting;
         }
 
         $event = $this->event();
         if ( $event ) {
             $schemas[] = $event;
+        }
+
+        $item_list = $this->item_list();
+        if ( $item_list ) {
+            $schemas[] = $item_list;
         }
 
         $breadcrumb = $this->breadcrumb();
@@ -46,6 +56,11 @@ class Klaw_SEO_Schema {
         $faq = $this->faq();
         if ( $faq ) {
             $schemas[] = $faq;
+        }
+
+        $local = $this->local_business();
+        if ( $local ) {
+            $schemas[] = $local;
         }
 
         foreach ( $schemas as $schema ) {
@@ -220,23 +235,17 @@ class Klaw_SEO_Schema {
         $post_id = get_the_ID();
         $post    = get_post( $post_id );
 
-        // Read mapped field keys.
-        $date_key  = $s['event_date_field'] ?? '';
-        $venue_key = $s['event_venue_field'] ?? '';
-        $desc_key  = $s['event_description_field'] ?? '';
-
-        // Get field values from post meta.
-        $event_date = $date_key ? get_post_meta( $post_id, $date_key, true ) : '';
+        // Read Klaw Events meta fields directly.
+        $event_date = get_post_meta( $post_id, '_klaw_event_date', true );
         $time_start = get_post_meta( $post_id, '_klaw_event_time_start', true );
         $time_end   = get_post_meta( $post_id, '_klaw_event_time_end', true );
-        $desc       = $desc_key ? get_post_meta( $post_id, $desc_key, true ) : '';
+        $desc       = get_post_meta( $post_id, '_klaw_event_description', true );
 
-        // Venue: if the value looks like a meta key, try to pull from post meta.
-        // Otherwise treat it as a literal venue name (e.g. "Cherrywood Coffeehouse").
-        $venue = '';
-        if ( $venue_key ) {
-            $meta_venue = get_post_meta( $post_id, $venue_key, true );
-            $venue      = $meta_venue ? $meta_venue : $venue_key; // fallback to literal value if meta is empty
+        // Venue: pull from event meta, fall back to settings value.
+        $venue_key = $s['event_venue_field'] ?? '';
+        $venue     = get_post_meta( $post_id, '_klaw_event_venue', true );
+        if ( ! $venue && $venue_key ) {
+            $venue = $venue_key;
         }
 
         if ( ! $desc ) {
@@ -489,6 +498,200 @@ class Klaw_SEO_Schema {
             '@context'   => 'https://schema.org',
             '@type'      => 'FAQPage',
             'mainEntity' => $entities,
+        ];
+    }
+
+    /**
+     * Build WebSite schema with SearchAction on the homepage.
+     *
+     * @return array|null
+     */
+    private function website() {
+        if ( ! is_front_page() ) {
+            return null;
+        }
+
+        $s = get_option( 'klaw_seo_settings', [] );
+        if ( isset( $s['schema_website_enabled'] ) && ! $s['schema_website_enabled'] ) {
+            return null;
+        }
+
+        return [
+            '@context'        => 'https://schema.org',
+            '@type'           => 'WebSite',
+            'name'            => get_bloginfo( 'name' ),
+            'url'             => home_url( '/' ),
+            'potentialAction' => [
+                '@type'       => 'SearchAction',
+                'target'      => [
+                    '@type'       => 'EntryPoint',
+                    'urlTemplate' => home_url( '/?s={search_term_string}' ),
+                ],
+                'query-input' => 'required name=search_term_string',
+            ],
+        ];
+    }
+
+    /**
+     * Build BlogPosting schema on single post pages.
+     *
+     * @return array|null
+     */
+    private function blog_posting() {
+        if ( ! is_singular() ) {
+            return null;
+        }
+
+        $s = get_option( 'klaw_seo_settings', [] );
+        if ( isset( $s['schema_blog_posting_enabled'] ) && ! $s['schema_blog_posting_enabled'] ) {
+            return null;
+        }
+
+        // Default to post only; filter for extensibility.
+        $post_types = apply_filters( 'klaw_seo_blog_posting_post_types', [ 'post' ] );
+        if ( ! in_array( get_post_type(), $post_types, true ) ) {
+            return null;
+        }
+
+        $post_id = get_the_ID();
+        $post    = get_post( $post_id );
+        if ( ! $post ) {
+            return null;
+        }
+
+        $desc = get_post_meta( $post_id, '_klaw_seo_description', true );
+        if ( ! $desc ) {
+            $desc = $post->post_excerpt ?: wp_trim_words( wp_strip_all_tags( $post->post_content ), 30, '...' );
+        }
+
+        $schema = [
+            '@context'         => 'https://schema.org',
+            '@type'            => 'BlogPosting',
+            'headline'         => get_the_title( $post_id ),
+            'description'      => $desc,
+            'datePublished'    => mysql2date( 'c', $post->post_date_gmt, false ),
+            'dateModified'     => mysql2date( 'c', $post->post_modified_gmt, false ),
+            'mainEntityOfPage' => [
+                '@type' => 'WebPage',
+                '@id'   => get_permalink( $post_id ),
+            ],
+        ];
+
+        if ( has_post_thumbnail( $post_id ) ) {
+            $schema['image'] = get_the_post_thumbnail_url( $post_id, 'large' );
+        }
+
+        // Author.
+        $author_id = (int) $post->post_author;
+        if ( $author_id ) {
+            $schema['author'] = [
+                '@type' => 'Person',
+                'name'  => get_the_author_meta( 'display_name', $author_id ),
+                'url'   => get_author_posts_url( $author_id ),
+            ];
+        }
+
+        // Publisher — site name + Site Icon as logo if present.
+        $publisher = [
+            '@type' => 'Organization',
+            'name'  => get_bloginfo( 'name' ),
+        ];
+        $site_icon = get_site_icon_url( 512 );
+        if ( $site_icon ) {
+            $publisher['logo'] = [
+                '@type' => 'ImageObject',
+                'url'   => $site_icon,
+            ];
+        }
+        $schema['publisher'] = $publisher;
+
+        return $schema;
+    }
+
+    /**
+     * Build ItemList schema on post type archive pages.
+     *
+     * Enabled per post type via settings: schema_item_list_{post_type}.
+     * For events, each item includes startDate, url, and location.
+     *
+     * @return array|null
+     */
+    private function item_list() {
+        if ( ! is_post_type_archive() ) {
+            return null;
+        }
+
+        $post_type = get_query_var( 'post_type' );
+        if ( is_array( $post_type ) ) {
+            $post_type = reset( $post_type );
+        }
+        if ( ! $post_type ) {
+            return null;
+        }
+
+        $s          = get_option( 'klaw_seo_settings', [] );
+        $toggle_key = 'schema_item_list_' . $post_type;
+        if ( empty( $s[ $toggle_key ] ) ) {
+            return null;
+        }
+
+        $posts = get_posts( [
+            'post_type'              => $post_type,
+            'post_status'            => 'publish',
+            'posts_per_page'         => -1,
+            'orderby'                => 'date',
+            'order'                  => 'DESC',
+            'no_found_rows'          => true,
+            'update_post_meta_cache' => false,
+            'update_post_term_cache' => false,
+        ] );
+
+        if ( ! $posts ) {
+            return null;
+        }
+
+        $is_event = ( $post_type === 'event' );
+        $elements = [];
+        $position = 1;
+
+        foreach ( $posts as $p ) {
+            $item = [
+                '@type' => $is_event ? 'Event' : 'Thing',
+                'name'  => $p->post_title,
+                'url'   => get_permalink( $p->ID ),
+            ];
+
+            if ( $is_event ) {
+                $event_date = get_post_meta( $p->ID, '_klaw_event_date', true );
+                $time_start = get_post_meta( $p->ID, '_klaw_event_time_start', true );
+                if ( $event_date ) {
+                    $item['startDate'] = $time_start
+                        ? $event_date . 'T' . $time_start . ':00'
+                        : $event_date;
+                }
+                $venue = get_post_meta( $p->ID, '_klaw_event_venue', true );
+                if ( ! $venue ) {
+                    $venue = $s['business_name'] ?? '';
+                }
+                if ( $venue ) {
+                    $item['location'] = [
+                        '@type' => 'Place',
+                        'name'  => $venue,
+                    ];
+                }
+            }
+
+            $elements[] = [
+                '@type'    => 'ListItem',
+                'position' => $position++,
+                'item'     => $item,
+            ];
+        }
+
+        return [
+            '@context'        => 'https://schema.org',
+            '@type'           => 'ItemList',
+            'itemListElement' => $elements,
         ];
     }
 }

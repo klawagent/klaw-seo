@@ -42,6 +42,7 @@ class Klaw_SEO_Settings {
             'general'        => __( 'General', 'klaw-seo' ),
             'social'         => __( 'Social', 'klaw-seo' ),
             'local-business' => __( 'Local Business', 'klaw-seo' ),
+            'schema-health'  => __( 'Schema & Health', 'klaw-seo' ),
             'sitemaps'       => __( 'Sitemaps', 'klaw-seo' ),
             'redirects'      => __( 'Redirects', 'klaw-seo' ),
             'robots'         => __( 'Robots.txt', 'klaw-seo' ),
@@ -137,6 +138,7 @@ class Klaw_SEO_Settings {
             'alt_text_ai_provider',
             'alt_text_ai_key_claude',
             'alt_text_ai_key_openai',
+            'alt_text_cron_frequency',
             'broken_links_frequency',
             'broken_links_email',
             'robots_content',
@@ -207,6 +209,17 @@ class Klaw_SEO_Settings {
         } elseif ( $page === 'alt-text' ) {
             $existing['alt_text_default_enabled'] = ! empty( $input['alt_text_default_enabled'] ) ? '1' : '';
             $existing['alt_text_ai_enabled']      = ! empty( $input['alt_text_ai_enabled'] ) ? '1' : '';
+        } elseif ( $page === 'schema-health' ) {
+            $existing['schema_website_enabled']      = ! empty( $input['schema_website_enabled'] ) ? '1' : '';
+            $existing['schema_blog_posting_enabled'] = ! empty( $input['schema_blog_posting_enabled'] ) ? '1' : '';
+
+            // Per-post-type ItemList toggles.
+            $public_types = get_post_types( [ 'public' => true ], 'names' );
+            unset( $public_types['attachment'] );
+            foreach ( $public_types as $pt ) {
+                $key = 'schema_item_list_' . $pt;
+                $existing[ $key ] = ! empty( $input[ $key ] ) ? '1' : '';
+            }
         } elseif ( $page === 'broken-links' ) {
             $existing['broken_links_enabled'] = ! empty( $input['broken_links_enabled'] ) ? '1' : '';
         } elseif ( $page === 'tracking' ) {
@@ -294,5 +307,38 @@ class Klaw_SEO_Settings {
         }
 
         return 'general';
+    }
+
+    /**
+     * Render a standard settings checkbox toggle row.
+     *
+     * Settings that haven't been saved yet default to ON — so installing the
+     * plugin and visiting a new feature's tab does not need explicit opt-in.
+     *
+     * @param string $key         Setting key within klaw_seo_settings.
+     * @param string $label       Human-readable row label.
+     * @param string $description Optional description shown under the label.
+     * @param array  $options     Current options array.
+     */
+    public static function render_toggle( $key, $label, $description, $options ) {
+        // Default to ON if key hasn't been stored yet.
+        $checked = array_key_exists( $key, $options ) ? ! empty( $options[ $key ] ) : true;
+        ?>
+        <tr>
+            <th scope="row"><?php echo esc_html( $label ); ?></th>
+            <td>
+                <label>
+                    <input type="checkbox"
+                           name="<?php echo esc_attr( self::OPTION . '[' . $key . ']' ); ?>"
+                           value="1"
+                           <?php checked( $checked ); ?> />
+                    <?php esc_html_e( 'Enable', 'klaw-seo' ); ?>
+                </label>
+                <?php if ( $description ) : ?>
+                    <p class="description"><?php echo esc_html( $description ); ?></p>
+                <?php endif; ?>
+            </td>
+        </tr>
+        <?php
     }
 }
