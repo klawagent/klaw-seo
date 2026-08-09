@@ -238,7 +238,12 @@ class Klaw_SEO_Settings {
         } elseif ( $page === 'broken-links' ) {
             $existing['broken_links_enabled'] = ! empty( $input['broken_links_enabled'] ) ? '1' : '';
         } elseif ( $page === 'tracking' ) {
-            // Textarea fields — contain raw HTML/JS, only wp_unslash.
+            // Textarea fields — contain raw HTML/JS, so no sanitising here.
+            // Do NOT wp_unslash(): wp-admin/options.php already unslashes the
+            // value before update_option() invokes this sanitize_callback. A
+            // second pass runs stripslashes over the script and eats backslashes
+            // in regexes, escaped quotes and \n sequences, breaking the snippet
+            // that is then echoed into <head> on every front-end page.
             $tracking_textarea_fields = [
                 'tracking_live_chat',
                 'tracking_cookie_consent',
@@ -248,7 +253,7 @@ class Klaw_SEO_Settings {
             ];
             foreach ( $tracking_textarea_fields as $key ) {
                 if ( isset( $input[ $key ] ) ) {
-                    $existing[ $key ] = wp_unslash( $input[ $key ] );
+                    $existing[ $key ] = $input[ $key ];
                 }
             }
         }

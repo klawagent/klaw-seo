@@ -107,7 +107,12 @@ class Klaw_SEO_Redirects {
         }
 
         if ( $target ) {
-            wp_redirect( esc_url( $target ), $type );
+            // NOT esc_url() — that is the display-context escaper and rewrites
+            // & as &#038;, which the browser then treats as a fragment (#) and
+            // silently drops every query parameter after the first. The value is
+            // already sanitised with esc_url_raw() on save and on CSV import, and
+            // wp_redirect() applies wp_sanitize_redirect() internally.
+            wp_redirect( $target, $type );
             exit;
         }
     }

@@ -22,7 +22,15 @@ class Klaw_SEO_Alt_Text {
      * Constructor — register hooks.
      */
     public function __construct() {
-        add_action( 'add_attachment', [ $this, 'auto_fill_alt' ] );
+        // NOT 'add_attachment'. As of WordPress 7.0, media_handle_upload() and
+        // media_handle_sideload() write _wp_attachment_image_alt from the image's
+        // EXIF/XMP metadata immediately AFTER wp_insert_attachment() — and
+        // 'add_attachment' fires inside wp_insert_attachment(), i.e. before that
+        // write. Hooking there meant our value was generated and then silently
+        // overwritten by core (and any AI vision call was paid for and discarded).
+        // 'wp_generate_attachment_metadata' runs after core's write, so the
+        // "already has alt" guard in auto_fill_alt() correctly defers to it.
+        add_filter( 'wp_generate_attachment_metadata', [ $this, 'auto_fill_alt_on_upload' ], 10, 2 );
         add_action( 'wp_ajax_klaw_seo_bulk_alt_scan', [ $this, 'ajax_bulk_scan' ] );
         add_action( 'wp_ajax_klaw_seo_bulk_alt_update', [ $this, 'ajax_bulk_update' ] );
         add_action( 'init', [ $this, 'schedule_scan' ] );
@@ -94,10 +102,27 @@ class Klaw_SEO_Alt_Text {
     }
 
     /**
+     * Filter adapter so auto-fill runs after core has written its own alt text.
+     *
+     * Hooked to 'wp_generate_attachment_metadata' purely for its timing; the
+     * metadata is passed straight through unmodified.
+     *
+     * @param array $metadata      Attachment metadata.
+     * @param int   $attachment_id Attachment post ID.
+     * @return array The unmodified metadata.
+     */
+    public function auto_fill_alt_on_upload( $metadata, $attachment_id ) {
+        $this->auto_fill_alt( $attachment_id );
+        return $metadata;
+    }
+
+    /**
      * Auto-fill alt text on image upload.
      *
      * Priority: parent post title > cleaned filename.
      * If AI is enabled, attempt AI-generated alt text instead.
+     * No-ops when the image already has alt text — including alt text
+     * WordPress 7.0+ derived from the file's own EXIF/XMP metadata.
      *
      * @param int $attachment_id Attachment post ID.
      */
