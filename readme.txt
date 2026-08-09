@@ -1,8 +1,8 @@
-=== Klaw SEO ===
+﻿=== Klaw SEO ===
 Contributors: welcomein, klawagent
 Tags: seo, meta tags, sitemap, schema, redirects
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 7.0
 Requires PHP: 8.0
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -16,16 +16,16 @@ Klaw SEO is a comprehensive yet lightweight SEO plugin built for agencies and de
 
 **Core Features:**
 
-* **Meta Titles & Descriptions** — Per-post SEO titles and descriptions with configurable templates and token support. Live character counters and Google search preview.
-* **Open Graph & Twitter Cards** — Full social media meta tag support with per-post overrides and a default fallback image.
-* **XML Sitemaps** — Auto-generated sitemap index and per-post-type sitemaps. Noindexed posts are excluded. Pagination at 1000 URLs. Auto-ping Google and Bing on publish.
-* **Schema / JSON-LD** — LocalBusiness, Event (with configurable field mapping), BreadcrumbList, and FAQPage structured data output.
-* **301/302 Redirects** — Manage URL redirects with hit tracking, CSV import/export, and object-cached lookups for performance.
-* **Robots.txt Editor** — Virtual robots.txt management with a reset-to-default option.
-* **Alt Text Automation** — Auto-fill alt text on upload from post titles or cleaned filenames. Optional AI-powered alt text via Claude or OpenAI vision APIs.
-* **Broken Link Checker** — Scheduled scans with DOMDocument link extraction, batched HTTP checks, dashboard widget, and email notifications.
-* **Admin Columns** — SEO Title and Noindex status columns on all post type list tables.
-* **Conflict Detection** — Warns if Yoast SEO, Rank Math, or All in One SEO is active to avoid duplicate output.
+* **Meta Titles & Descriptions** â€” Per-post SEO titles and descriptions with configurable templates and token support. Live character counters and Google search preview.
+* **Open Graph & Twitter Cards** â€” Full social media meta tag support with per-post overrides and a default fallback image.
+* **XML Sitemaps** â€” Auto-generated sitemap index and per-post-type sitemaps. Noindexed posts are excluded. Pagination at 1000 URLs. Auto-ping Google and Bing on publish.
+* **Schema / JSON-LD** â€” LocalBusiness, Event (with configurable field mapping), BreadcrumbList, and FAQPage structured data output.
+* **301/302 Redirects** â€” Manage URL redirects with hit tracking, CSV import/export, and object-cached lookups for performance.
+* **Robots.txt Editor** â€” Virtual robots.txt management with a reset-to-default option.
+* **Alt Text Automation** â€” Auto-fill alt text on upload from post titles or cleaned filenames. Optional AI-powered alt text via Claude or OpenAI vision APIs.
+* **Broken Link Checker** â€” Scheduled scans with DOMDocument link extraction, batched HTTP checks, dashboard widget, and email notifications.
+* **Admin Columns** â€” SEO Title and Noindex status columns on all post type list tables.
+* **Conflict Detection** â€” Warns if Yoast SEO, Rank Math, or All in One SEO is active to avoid duplicate output.
 
 **Built for Agencies:**
 
