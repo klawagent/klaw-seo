@@ -4,7 +4,7 @@ Tags: seo, meta tags, sitemap, schema, redirects
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,11 @@ Yes. Go to **Klaw SEO > Sitemaps** and check the post types you want included.
 When enabled, images uploaded to the media library are sent to either Claude (Anthropic) or OpenAI for a vision-based description. You need to provide your own API key. The feature is optional and can be disabled at any time.
 
 == Changelog ==
+
+= 1.1.0 =
+* Share cards: og:image:width/height/type/alt hints so Facebook/Instagram render the image on the first scrape.
+* Share cards: archives, categories, and search now emit the full Open Graph + Twitter block with the default social image (scrapers previously fell back to the page logo, which crops badly in chat previews).
+* Meta descriptions no longer leak raw shortcode tags or &nbsp; from shortcode-built pages.
 
 = 1.0.0 =
 * Initial release.
